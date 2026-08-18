@@ -1,36 +1,71 @@
-# Resumen del Proyecto — Clasificación de Enfermedades en Hojas de Tomate
+# Clasificación de Enfermedades en Hojas de Tomate
 
 **Autor:** Jacobo Diaz Alvarado
 
 ## Resumen
 
-Proyecto para analizar el efecto de las capas convolucionales en la clasificación de imágenes (hojas de tomate). Se siguieron los pasos del enunciado hasta el punto 5 (EDA, modelo baseline sin convoluciones, diseño de una CNN desde cero, experimento controlado y reflexión arquitectónica). El punto 6 (despliegue en SageMaker) queda como espacio para evidencias y scripts posteriores.
+Proyecto para analizar cómo las capas convolucionales afectan el aprendizaje y desempeño de una red neuronal para clasificación de imágenes.
 
-## Qué se hizo
+Elegí trabajar con hojas de tomate porque actualmente estoy cultivando tomates en mi balcón, por lo que me pareció interesante aplicar el modelo a un problema relacionado con algo que estoy experimentando personalmente.
 
-- Selección y preparación del dataset: se creó un subconjunto equilibrado de `plantvillage` con 4 clases (`Tomato___healthy`, `Tomato___Late_blight`, `Tomato___Septoria_leaf_spot`, `Tomato___Spider_mites Two-spotted_spider_mite`) y ~5,558 imágenes en total.
-- Exploración (EDA): revisión de conteos por clase, visualización de ejemplos y comprobación de dimensiones y canales (todas las imágenes en RGB y 256×256).
-- Baseline (sin convoluciones): modelo `Flatten` + `Dense` (128→64→4), ~25M parámetros, entrenamiento con `Rescaling(1./255)`. Resultado: train acc ≈ 0.86, val acc ≈ 0.82 (inestabilidad observada). Limitaciones: muchos parámetros, alto costo computacional y sensibilidad al learning rate.
-- CNN diseñada desde cero: arquitectura simple con 2 capas conv (16@5x5 → 32@3x3), `padding='same'`, `ReLU`, `MaxPooling2D`, `GlobalAveragePooling2D` y dense final. Menos parámetros (~8k) y mejor desempeño.
-- Experimento controlado: comparativa entre CNN de 2 capas y 3 capas (todo lo demás fijo). Resultado: la CNN de 2 capas superó a la de 3 capas en validación y fue más rápida por epoch bajo las condiciones de CPU y 10 épocas.
-- Interpretación: la convolución preserva vecindad espacial y agrega un sesgo inductivo útil para detectar texturas y patrones locales; no es adecuada para datos tabulares sin estructura espacial.
+Se trabajó con un subconjunto de **PlantVillage** de aproximadamente 5.558 imágenes y cuatro clases:
+
+- `Tomato___healthy`
+- `Tomato___Late_blight`
+- `Tomato___Septoria_leaf_spot`
+- `Tomato___Spider_mites Two-spotted_spider_mite`
+
+## Trabajo realizado
+
+- Preparación y balanceo del dataset.
+- EDA y revisión de imágenes, dimensiones y clases.
+- Construcción de un modelo **baseline sin convoluciones**.
+- Diseño de una **CNN desde cero**.
+- Comparación entre una CNN de 2 capas convolucionales y otra de 3 capas.
+- Evaluación de accuracy y loss en entrenamiento y validación.
+- Pruebas de predicción sobre imágenes individuales.
+- Preparación del modelo para su almacenamiento y despliegue en AWS SageMaker.
 
 ## Descubrimientos principales
 
-- Normalizar entradas (rescaling) fue crítico: sin ello el entrenamiento colapsó.
-- Un learning rate demasiado alto (p.ej. 0.01) llevó a colapso; 0.0001 permitió aprendizaje estable.
-- Más capas no siempre mejora: la CNN de 2 capas fue mejor que la de 3 bajo el límite de cómputo usado.
-- `GlobalAveragePooling2D` reduce drásticamente el número de parámetros comparado con `Flatten()` sin perder la representatividad global de los mapas de características.
+- La normalización de las imágenes mediante `Rescaling(1./255)` fue importante para conseguir un entrenamiento estable.
+- Un `learning_rate` demasiado alto provocó problemas de aprendizaje, mientras que `0.0001` produjo resultados más estables.
+- Agregar más capas convolucionales no garantizó un mejor resultado. Bajo las condiciones de cómputo utilizadas, la CNN de 2 capas obtuvo mejores resultados de validación que la de 3 capas.
+- `GlobalAveragePooling2D` permitió mantener una arquitectura pequeña y reducir considerablemente la cantidad de parámetros.
+- Las convoluciones son especialmente útiles para este problema porque permiten aprender patrones espaciales y características locales presentes en las hojas.
+
+## Resultado destacado
+
+La CNN utilizada en el experimento alcanzó aproximadamente:
+
+- **Accuracy de entrenamiento:** 85.3%
+- **Accuracy de validación:** 79.8%
+
+Estos resultados muestran que una arquitectura convolucional relativamente pequeña puede aprender características relevantes de las imágenes sin necesidad de utilizar una red con millones de parámetros.
+
+## SageMaker
+
+Se llegó hasta la etapa de preparación del modelo para despliegue en **AWS SageMaker**.
+
+Se logró:
+
+- Guardar correctamente el modelo.
+- Empaquetarlo como `model.tar.gz`.
+- Subirlo correctamente a un bucket de Amazon S3.
+- Verificar que el archivo existiera en S3.
+- Preparar la configuración necesaria para crear el modelo de TensorFlow en SageMaker.
+
+El despliegue quedó interrumpido por problemas de conectividad con SageMaker Studio. El kernel quedó en estado **Connecting** y posteriormente la página dejó de cargar correctamente. También apareció un error de guardado del notebook `NN_plant_detection.ipynb`.
+
+Por esta razón, la parte final del despliegue no pudo completarse ni documentarse con evidencias adicionales. El trabajo realizado hasta ese punto quedó guardado en S3.
 
 ## Cómo reproducir
 
-1. Abrir y ejecutar el notebook `NN_plant_detection.ipynb` (celdas en orden). Las dependencias principales son: `tensorflow`, `matplotlib`, `Pillow`.
-2. Recomiendo ejecutar en un entorno con GPU si se dispone para reducir tiempo de entrenamiento.
+1. Abrir `NN_plant_detection.ipynb`.
+2. Ejecutar las celdas en orden.
+3. Utilizar un entorno con TensorFlow y las dependencias indicadas en el notebook.
+4. Para reducir los tiempos de entrenamiento, se recomienda utilizar GPU cuando esté disponible.
 
+## Conclusión
 
-## Evidencia de SageMaker 
-
-
-
----
-
+El experimento permitió observar de manera práctica que la arquitectura de una red neuronal influye directamente en su capacidad de aprendizaje, costo computacional y desempeño. En este caso, una CNN pequeña fue suficiente para obtener resultados razonables en la clasificación de enfermedades de hojas de tomate, y el experimento también mostró que aumentar la profundidad de la red no necesariamente produce mejores resultados.
