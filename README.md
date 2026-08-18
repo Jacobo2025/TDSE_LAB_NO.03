@@ -27,15 +27,10 @@ Proyecto para analizar el efecto de las capas convolucionales en la clasificaci�
 1. Abrir y ejecutar el notebook `NN_plant_detection.ipynb` (celdas en orden). Las dependencias principales son: `tensorflow`, `matplotlib`, `Pillow`.
 2. Recomiendo ejecutar en un entorno con GPU si se dispone para reducir tiempo de entrenamiento.
 
-Ejemplo de instalación rápida:
 
-```bash
-python -m pip install -r requirements.txt
-```
+## Evidencia de SageMaker 
 
-## Evidencia de SageMaker (espacio reservado)
 
-Aquí se añadirá: enlaces a logs, ARN del endpoint, comandos `aws sagemaker` usados, y capturas o URLs que prueben el despliegue en SageMaker.
 
 ---
 
