@@ -45,7 +45,7 @@ Estos resultados muestran que una arquitectura convolucional relativamente peque
 
 ## SageMaker
 
-Se llegó hasta la etapa de preparación del modelo para despliegue en **AWS SageMaker**.
+Se avanzó hasta la etapa de despliegue del modelo en **AWS SageMaker**.
 
 Se logró:
 
@@ -53,19 +53,12 @@ Se logró:
 - Empaquetarlo como `model.tar.gz`.
 - Subirlo correctamente a un bucket de Amazon S3.
 - Verificar que el archivo existiera en S3.
-- Preparar la configuración necesaria para crear el modelo de TensorFlow en SageMaker.
+- Crear correctamente el objeto `TensorFlowModel` en SageMaker.
+- Intentar crear un endpoint de inferencia.
 
-El despliegue quedó interrumpido por problemas de conectividad con SageMaker Studio. El kernel quedó en estado **Connecting** y posteriormente la página dejó de cargar correctamente. También apareció un error de guardado del notebook `NN_plant_detection.ipynb`.
+El proceso presentó inicialmente problemas de conectividad con SageMaker Studio. El kernel permaneció en estado **Connecting** y la página dejó de cargar correctamente. También apareció un error de guardado del notebook `NN_plant_detection.ipynb`.
 
-Por esta razón, la parte final del despliegue no pudo completarse ni documentarse con evidencias adicionales. El trabajo realizado hasta ese punto quedó guardado en S3.
+Una vez recuperado el acceso a SageMaker, se continuó con el despliegue. Sin embargo, la creación del endpoint fue rechazada por AWS con un `AccessDeniedException`. El rol `LabRole` utilizado por el entorno de laboratorio no tenía autorización para ejecutar:
 
-## Cómo reproducir
-
-1. Abrir `NN_plant_detection.ipynb`.
-2. Ejecutar las celdas en orden.
-3. Utilizar un entorno con TensorFlow y las dependencias indicadas en el notebook.
-4. Para reducir los tiempos de entrenamiento, se recomienda utilizar GPU cuando esté disponible.
-
-## Conclusión
-
-El experimento permitió observar de manera práctica que la arquitectura de una red neuronal influye directamente en su capacidad de aprendizaje, costo computacional y desempeño. En este caso, una CNN pequeña fue suficiente para obtener resultados razonables en la clasificación de enfermedades de hojas de tomate, y el experimento también mostró que aumentar la profundidad de la red no necesariamente produce mejores resultados.
+```text
+sagemaker:CreateEndpointConfig
